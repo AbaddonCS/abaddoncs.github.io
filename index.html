@@ -1,1 +1,177 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>abaddon.lol</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <style>
+    body {
+      background-color: black;
+      color: #55ff55;
+      font-family: monospace;
+    }
+    main {
+      max-width: 95vw;
+    }
+    .output {
+      color: white;
+      margin-top: 5px;
+    }
+    a {
+      color: #99f;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    @keyframes blinker {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    .active:after {
+      content: '_';
+      animation: blinker 0.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+    .prompt {
+      display: block;
+      max-width: 600px;
+    }
+    #userInput {
+      background-color: black;
+      border: none;
+      color: white;
+      font-family: monospace;
+      outline: none;
+      width: 100%;
+    }
+    #userInput:focus {
+      outline: none;
+    }
+    label {
+      margin-right: 5px;
+    }
+    #terminal {
+      display: none;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="prompt">
+    <pre data-cmd="ls -lah">
+Commands list: 
+
+projects  -  A portfolio of our projects.
+test      -  testing
+    </pre>
+    
+    <p data-cmd="cat who-are-we.txt">
+    abaddon is a community of ethical hackers dedicated to promoting cybersecurity awareness and protecting digital systems. We find and fix security problems, educate others about cybersecurity, and collaborate on projects. 
+    <br><br>
+    <a href="https://discord.gg/eUwXdM9m7K">Join our discord here</a><br>
+    <a href="https://github.com/AbaddonCS">Our github</a>
+    </p>
+
+  </main>
+  <div id="terminal"><label for="userInput">root@abaddon:~#   </label><input type="text" name="userInput" id="userInput" /></div>
+  <div id="output" style="width: 100%; height: 100%"></div>
+  <script>
+
+// ######## command functions here ###########
+function projects() {
+  var outputDiv = document.createElement('div');
+  outputDiv.setAttribute('class', 'output');
+  outputDiv.innerHTML = 'List of projects: Project A, Project B, Project C';
+  document.getElementById('output').appendChild(outputDiv);
+}
+    
+function test() {
+  alert("test");
+}
+//############################################
+
+window.addEventListener("DOMContentLoaded", (event) => {
+  const userInput = document.getElementById("userInput");
+  const userInputDiv = document.getElementById("terminal");
+  
+  var lines = [].slice.call(document.querySelectorAll('.prompt > *'));
+  var cmds = lines.map(function(line) { return line.getAttribute('data-cmd'); });
+  var htmls = lines.map(function(line) { return line.innerHTML; });
+
+  lines.forEach(function(line) { line.innerHTML = ''; });
+
+  var i = 0;
+  function typeLine() {
+    if (i < lines.length) {
+      var line = lines[i], cmd = cmds[i], html = htmls[i];
+
+      line.appendChild(document.createTextNode('root@abaddon:~# '));
+      line.classList.add('active');
+
+      var c = 0;
+      function typeChar() {
+        if (c < cmd.length) {
+
+          var character = document.createTextNode(cmd.charAt(c));
+          line.appendChild(character);
+          c++;
+
+          setTimeout(typeChar, 90);
+        } else {
+
+          var result = document.createElement('div');
+          result.setAttribute('class', 'output');
+          result.innerHTML = html;
+          line.appendChild(result);
+          line.classList.remove('active');
+
+          i++;
+          typeLine();
+        }
+      }
+
+      setTimeout(typeChar, 800);
+    } else {
+      userInputDiv.style.display = "flex";
+      //userInput.focus();
+    }
+  }
+
+  typeLine();
+
+  var commands = {
+    "projects": projects,
+    "test": test,
+  };
+
+  userInput.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      var outputDiv = document.getElementById("output")
+      outputDiv.innerHTML = "";
+      var userInput = this.value.trim();
+      this.value = '';
+
+      var output = commands[userInput]
+
+      if (userInput in commands) {
+        commands[userInput]();
+      } else {
+        output = document.createElement("p");
+        output.classList.remove('output');
+        output.classList.add('error');
+        output.innerHTML = 'Error: Invalid command';
+        outputDiv.appendChild(output);
+        setTimeout(function() {
+          output.remove();
+        }, 2000);
+      }
+    }
+  });
+});
+  </script>
+</body>
+</html>
